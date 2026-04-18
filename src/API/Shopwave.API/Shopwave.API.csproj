@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Modules\Identity\Shopwave.Modules.Identity.Application\Shopwave.Modules.Identity.Application.csproj" />
+    <ProjectReference Include="..\..\Modules\Catalog\Shopwave.Modules.Catalog.Application\Shopwave.Modules.Catalog.Application.csproj" />
+    <ProjectReference Include="..\..\Modules\Inventory\Shopwave.Modules.Inventory.Application\Shopwave.Modules.Inventory.Application.csproj" />
+    <ProjectReference Include="..\..\Modules\Orders\Shopwave.Modules.Orders.Application\Shopwave.Modules.Orders.Application.csproj" />
+    <ProjectReference Include="..\..\Modules\Payments\Shopwave.Modules.Payments.Application\Shopwave.Modules.Payments.Application.csproj" />
+    <ProjectReference Include="..\..\Modules\Stores\Shopwave.Modules.Stores.Application\Shopwave.Modules.Stores.Application.csproj" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+</Project>
