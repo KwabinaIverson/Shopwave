@@ -22,6 +22,16 @@ public class Entity
     /// Gets the date and time when this entity was last updated, in UTC.
     /// </summary>
     public DateTime UpdatedAt { get; protected set; } = DateTime.UtcNow;
+    
+    /// <summary>
+    /// Gets a value indicating whether this entity has been marked as deleted.
+    /// </summary>
+    public bool IsDeleted { get; protected set; }
+
+    /// <summary>
+    /// Gets the date and time when this entity was deleted, in UTC, or null if not deleted.
+    /// </summary>
+    public DateTime? DeletedAt { get; protected set; }
 
     private readonly List<IDomainEvent> _events = new();
 
