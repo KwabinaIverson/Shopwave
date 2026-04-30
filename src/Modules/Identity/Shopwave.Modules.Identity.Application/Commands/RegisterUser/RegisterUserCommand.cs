@@ -9,4 +9,5 @@ public record RegisterUserCommand(
     string Email,
     string Password,
     string PhoneNumber
-) : ICommand<Result<Guid>>;
+) : ICommand<Result<Guid>>
+;

@@ -12,13 +12,15 @@ public class RegisterUserCommandHandler : ICommandHandler<RegisterUserCommand, R
     private readonly IUserRepository _userRepository;
     private readonly IMediator _mediator;
     private readonly IPasswordHasher _passwordHasher;
+    private readonly IUnitOfWork _unitOfWork;
 
     public RegisterUserCommandHandler(IUserRepository userRepository, IMediator mediator,
-        IPasswordHasher passwordHasher)
+        IPasswordHasher passwordHasher, IUnitOfWork unitOfWork)
     {
         _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
         _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
         _passwordHasher = passwordHasher ?? throw new ArgumentNullException(nameof(passwordHasher));
+        _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
     }
 
     public async Task<Result<Guid>> Handle(RegisterUserCommand request, CancellationToken ct)
@@ -53,6 +55,7 @@ public class RegisterUserCommandHandler : ICommandHandler<RegisterUserCommand, R
             );
 
         await _userRepository.AddAsync(user);
+        _unitOfWork.SaveChangesAsync(ct);
         
         foreach (var domainEvent in user.DomainEvents)
             await _mediator.Publish(domainEvent, ct);
