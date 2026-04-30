@@ -155,9 +155,16 @@ public class User : AggregateRoot
     {}
 
     /// <summary>
-    /// Creates a new instance of the <see cref="User"/> class.
+    /// Creates a new instance of the <see cref="User"/> class with the specified details.
     /// </summary>
-    /// <returns>A new <see cref="User"/> instance.</returns>
+    /// <param name="firstName">The user's first name.</param>
+    /// <param name="lastName">The user's last name.</param>
+    /// <param name="email">The user's email address.</param>
+    /// <param name="passwordHash">The hashed password for the user.</param>
+    /// <param name="phoneNumber">The user's phone number.</param>
+    /// <param name="role">The user's role in the system.</param>
+    /// <returns>A new <see cref="User"/> instance with the specified details.</returns>
+    /// <exception cref="ArgumentException">Thrown when any parameter validation fails.</exception>
     public static User Create(string firstName, string lastName, string email, string passwordHash, string 
             phoneNumber, UserRole role)
     {
@@ -173,6 +180,10 @@ public class User : AggregateRoot
         return user;
     }
 
+    /// <summary>
+    /// Soft-deletes the user by marking it as deleted and recording the deletion time.
+    /// Raises a <see cref="UserDeletedEvent"/> domain event.
+    /// </summary>
     public void Delete()
     {
         this.IsDeleted = true;
