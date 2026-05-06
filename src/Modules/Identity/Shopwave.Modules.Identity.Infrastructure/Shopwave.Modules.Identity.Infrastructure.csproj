@@ -2,12 +2,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Shopwave.Modules.Identity.Application\Shopwave.Modules.Identity.Application.csproj" />
-    <ProjectReference Include="..\Shopwave.Modules.Identity.Domain\Shopwave.Modules.Identity.Domain.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="BCrypt.Net-Next" Version="4.1.0" />
-    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.4" />
   </ItemGroup>
 
   <PropertyGroup>

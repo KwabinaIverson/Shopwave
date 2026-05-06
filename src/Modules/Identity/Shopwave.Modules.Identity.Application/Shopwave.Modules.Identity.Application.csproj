@@ -2,7 +2,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Shopwave.Modules.Identity.Domain\Shopwave.Modules.Identity.Domain.csproj" />
-    <ProjectReference Include="..\..\..\Shared\Shopwave.Shared\Shopwave.Shared.csproj" />
   </ItemGroup>
 
   <PropertyGroup>
