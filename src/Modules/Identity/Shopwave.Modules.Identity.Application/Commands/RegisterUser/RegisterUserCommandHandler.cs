@@ -55,7 +55,7 @@ public class RegisterUserCommandHandler : ICommandHandler<RegisterUserCommand, R
             );
 
         await _userRepository.AddAsync(user);
-        _unitOfWork.SaveChangesAsync(ct);
+        await _unitOfWork.SaveChangesAsync(ct);
         
         foreach (var domainEvent in user.DomainEvents)
             await _mediator.Publish(domainEvent, ct);
