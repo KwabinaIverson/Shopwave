@@ -95,7 +95,7 @@ app.MapPost("/users/register", async (
     var result = await mediator.Send<RegisterUserCommand, Result<Guid>>(command, ct);
 
     return result.IsSuccess
-        ? Results.Created(result.Value)
+        ? Results.CreatedAtRoute("GetUserById", new { id = result.Value }, result.Value)
         : Results.BadRequest(result.Error);
 });
 
