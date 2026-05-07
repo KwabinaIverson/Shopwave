@@ -1,87 +1,18 @@
-using Shopwave.Shared;
-using Shopwave.Shared.Results;
-using Shopwave.Shared.Abstractions;
-using Shopwave.Shared.Mediator;
-
-using Shopwave.Modules.Identity.Application.Abstractions;
-using Shopwave.Modules.Identity.Application.Commands.RegisterUser;
-
-using Shopwave.Modules.Identity.Infrastructure.Security;
-using Shopwave.Modules.Identity.Domain.Repositories;
-using Shopwave.Modules.Identity.Infrastructure.Repositories;
-using Shopwave.Modules.Identity.Infrastructure.Persistence;
-
-using Microsoft.EntityFrameworkCore;
-using Microsoft.OpenApi.Models;
-using Scrutor;
-
 var builder = WebApplication.CreateBuilder(args);
 
-// ── SERVICES ─────────────────────────────
-
-// mediator
-builder.Services.AddScoped<IMediator, Mediator>();
-
-// identity services
-builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
-builder.Services.AddScoped<IUserRepository, UserRepository>();
-
-// auto-register ALL handlers
-builder.Services.Scan(scan => scan
-    .FromApplicationDependencies()
-
-    // command handlers (no result)
-    .AddClasses(classes => classes.AssignableTo(typeof(ICommandHandler<>)))
-    .AsImplementedInterfaces()
-    .WithScopedLifetime()
-
-    // command handlers (with result)
-    .AddClasses(classes => classes.AssignableTo(typeof(ICommandHandler<,>)))
-    .AsImplementedInterfaces()
-    .WithScopedLifetime()
-
-    // query handlers
-    .AddClasses(classes => classes.AssignableTo(typeof(IQueryHandler<,>)))
-    .AsImplementedInterfaces()
-    .WithScopedLifetime()
-
-    // domain event handlers
-    .AddClasses(classes => classes.AssignableTo(typeof(IDomainEventHandler<>)))
-    .AsImplementedInterfaces()
-    .WithScopedLifetime()
-);
-
-// unit of work
-builder.Services.AddScoped<IUnitOfWork>(sp =>
-    sp.GetRequiredService<IdentityDbContext>());
-
-// database
-builder.Services.AddDbContext<IdentityDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
-);
-
-// swagger
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(options =>
-{
-    options.SwaggerDoc("v1", new OpenApiInfo
-    {
-        Title = "Shopwave API",
-        Version = "v1"
-    });
-});
-
-
-// ── APP ─────────────────────────────
+// Add services to the container.
 
 var app = builder.Build();
 
-// swagger middleware
-if (app.Environment.IsDevelopment())
+// Configure the HTTP request pipeline.
+
+app.UseHttpsRedirection();
+
+var summaries = new[]
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
+};
+
 
 // test endpoint
 app.MapGet("/", () => "shopwave api running");
