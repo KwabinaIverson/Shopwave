@@ -13,22 +13,21 @@ var summaries = new[]
     "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
 };
 
-app.MapGet("/weatherforecast", () =>
+
+// test endpoint
+app.MapGet("/", () => "shopwave api running");
+
+// register user endpoint
+app.MapPost("/users/register", async (
+    RegisterUserCommand command,
+    IMediator mediator,
+    CancellationToken ct) =>
 {
-    var forecast =  Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
+    var result = await mediator.Send<RegisterUserCommand, Result<Guid>>(command, ct);
+
+    return result.IsSuccess
+        ? Results.CreatedAtRoute("GetUserById", new { id = result.Value }, result.Value)
+        : Results.BadRequest(result.Error);
 });
 
 app.Run();
-
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
