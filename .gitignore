@@ -482,3 +482,4 @@ $RECYCLE.BIN/
 
 # Vim temporary swap files
 *.swp
+src/API/Shopwave.API/appsettings.Development.json
