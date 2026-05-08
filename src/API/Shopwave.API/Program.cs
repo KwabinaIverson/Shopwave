@@ -5,6 +5,8 @@ using Shopwave.Shared.Mediator;
 
 using Shopwave.Modules.Identity.Application.Abstractions;
 using Shopwave.Modules.Identity.Application.Commands.RegisterUser;
+using Shopwave.Modules.Identity.Application.Commands.LoginUser;
+using Shopwave.Modules.Identity.Application.Commands.LoginUser.Responses;
 
 using Shopwave.Modules.Identity.Infrastructure.Security;
 using Shopwave.Modules.Identity.Domain.Repositories;
@@ -51,6 +53,9 @@ builder.Services.Scan(scan => scan
     .WithScopedLifetime()
 );
 
+//jwttoken
+builder.Services.AddScoped<ITokenService, TokenService>();
+
 // unit of work
 builder.Services.AddScoped<IUnitOfWork>(sp =>
     sp.GetRequiredService<IdentityDbContext>());
@@ -70,7 +75,6 @@ builder.Services.AddSwaggerGen(options =>
         Version = "v1"
     });
 });
-
 
 // ── APP ─────────────────────────────
 
@@ -95,7 +99,19 @@ app.MapPost("/users/register", async (
     var result = await mediator.Send<RegisterUserCommand, Result<Guid>>(command, ct);
 
     return result.IsSuccess
-        ? Results.CreatedAtRoute("GetUserById", new { id = result.Value }, result.Value)
+        ? Results.Created($"/users/{result.Value}", result.Value)
+        : Results.BadRequest(result.Error);
+});
+
+app.MapPost("/users/login", async (
+    LoginUserCommand command,
+    IMediator mediator,
+    CancellationToken ct) =>
+{
+    var result = await mediator.Send<LoginUserCommand, Result<LoginUserResponse>>(command, ct);
+
+    return result.IsSuccess
+        ? Results.Ok(result.Value)
         : Results.BadRequest(result.Error);
 });
 
