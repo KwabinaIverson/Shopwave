@@ -2,6 +2,7 @@ using Shopwave.Modules.Identity.Application.Abstractions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
+using System.Security.Cryptography;
 using System.Security.Claims;
 using System.Text;
 
@@ -38,5 +39,12 @@ public class TokenService : ITokenService
       );
 
       return new JwtSecurityTokenHandler().WriteToken(token);
+   }
+
+   public string GenerateRefreshToken()
+   {
+      var randomBytes = RandomNumberGenerator.GetBytes(64);
+      
+      return Convert.ToBase64String(randomBytes);
    }
 }

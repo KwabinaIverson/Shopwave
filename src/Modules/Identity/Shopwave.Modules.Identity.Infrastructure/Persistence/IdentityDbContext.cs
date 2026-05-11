@@ -12,10 +12,12 @@ public class IdentityDbContext : DbContext, IUnitOfWork
     }   
     
     public DbSet<User> Users => Set<User>();
+    public DbSet<RefreshToken> RefreshToken => Set<RefreshToken>();
     
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.ApplyConfiguration(new UserConfiguration());
+        modelBuilder.ApplyConfigurationsFromAssembly(
+            typeof(IdentityDbContext).Assembly);
     }
 
 	public override Task<int> SaveChangesAsync(CancellationToken ct = default) => base.SaveChangesAsync(ct);
