@@ -5,5 +5,6 @@ public record LoginUserResponse(
     string LastName,
     string Email,
     string PhoneNumber,
-    string Token
+    string Token,
+    string RefreshToken
 );
