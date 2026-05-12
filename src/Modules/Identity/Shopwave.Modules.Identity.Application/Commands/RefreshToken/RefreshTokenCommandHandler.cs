@@ -53,8 +53,10 @@ public class RefreshTokenCommandHandler
         if (string.IsNullOrWhiteSpace(request.RefreshToken))
             return Result.Failure<RefreshTokenResponse>("Refresh token is required.");
         
+        var hashedToken = RefreshTokenEntity.HashToken(request.RefreshToken);
+        
         var token = await _refreshTokenRepository
-                .FindByTokenStringAsync(request.RefreshToken, ct);
+                .FindByTokenStringAsync(hashedToken, ct);
 
         if (token is null)
             return Result.Failure<RefreshTokenResponse>("Invalid refresh token.");
@@ -74,6 +76,7 @@ public class RefreshTokenCommandHandler
         var hashedNewRefreshToken = RefreshTokenEntity.HashToken(rawNewRefreshToken);
         
         token.Revoke(hashedNewRefreshToken);
+        
         await _refreshTokenRepository.UpdateAsync(token, ct);
         
         var newRefreshToken = RefreshTokenEntity.Create(user.Id, rawNewRefreshToken, DateTime.UtcNow.AddDays(7));

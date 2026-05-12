@@ -67,7 +67,7 @@ public class LoginUserCommandHandler : ICommandHandler<LoginUserCommand, Result<
                     user.Email,
                     user.PhoneNumber,
                     token,
-                    refreshToken.Token
+                    rawToken
                 )
             );
     }
