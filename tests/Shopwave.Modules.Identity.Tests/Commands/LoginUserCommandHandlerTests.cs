@@ -51,15 +51,21 @@ public class LoginUserCommandHandlerTests
         Assert.False(result.IsSuccess);
 
         _mockRepos.Verify(r =>
-            r.GetByEmailAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()),
+            r.GetByEmailAsync(
+                It.IsAny<string>(),
+                It.IsAny<CancellationToken>()),
             Times.Never);
 
         _mockHasher.Verify(h =>
-            h.VerifyPassword(It.IsAny<string>(), It.IsAny<string>()),
+            h.VerifyPassword(
+                It.IsAny<string>(),
+                It.IsAny<string>()),
             Times.Never);
 
         _mockTokenService.Verify(t =>
-            t.GenerateToken(It.IsAny<Guid>(), It.IsAny<string>()),
+            t.GenerateToken(
+                It.IsAny<Guid>(),
+                It.IsAny<string>()),
             Times.Never);
     }
 
@@ -73,7 +79,9 @@ public class LoginUserCommandHandlerTests
         Assert.False(result.IsSuccess);
 
         _mockTokenService.Verify(t =>
-            t.GenerateToken(It.IsAny<Guid>(), It.IsAny<string>()),
+            t.GenerateToken(
+                It.IsAny<Guid>(),
+                It.IsAny<string>()),
             Times.Never);
     }
 
@@ -83,7 +91,9 @@ public class LoginUserCommandHandlerTests
         var command = CreateValidCommand();
 
         _mockRepos.Setup(r =>
-            r.GetByEmailAsync(command.Email, It.IsAny<CancellationToken>()))
+            r.GetByEmailAsync(
+                command.Email,
+                It.IsAny<CancellationToken>()))
             .ReturnsAsync((User?)null);
 
         var result = await _handler.Handle(command, CancellationToken.None);
@@ -91,7 +101,9 @@ public class LoginUserCommandHandlerTests
         Assert.False(result.IsSuccess);
 
         _mockTokenService.Verify(t =>
-            t.GenerateToken(It.IsAny<Guid>(), It.IsAny<string>()),
+            t.GenerateToken(
+                It.IsAny<Guid>(),
+                It.IsAny<string>()),
             Times.Never);
     }
 
@@ -110,11 +122,15 @@ public class LoginUserCommandHandlerTests
         );
 
         _mockRepos.Setup(r =>
-            r.GetByEmailAsync(command.Email, It.IsAny<CancellationToken>()))
+            r.GetByEmailAsync(
+                command.Email,
+                It.IsAny<CancellationToken>()))
             .ReturnsAsync(user);
 
         _mockHasher.Setup(h =>
-            h.VerifyPassword(command.Password, user.PasswordHash))
+            h.VerifyPassword(
+                command.Password,
+                user.PasswordHash))
             .Returns(false);
 
         var result = await _handler.Handle(command, CancellationToken.None);
@@ -122,7 +138,15 @@ public class LoginUserCommandHandlerTests
         Assert.False(result.IsSuccess);
 
         _mockTokenService.Verify(t =>
-            t.GenerateToken(It.IsAny<Guid>(), It.IsAny<string>()),
+            t.GenerateToken(
+                It.IsAny<Guid>(),
+                It.IsAny<string>()),
+            Times.Never);
+
+        _mockRefreshTokenRepository.Verify(r =>
+            r.SaveAsync(
+                It.IsAny<RefreshToken>(),
+                It.IsAny<CancellationToken>()),
             Times.Never);
     }
 
@@ -140,29 +164,63 @@ public class LoginUserCommandHandlerTests
             UserRole.Buyer
         );
 
-        var token = "jwt-token";
+        var accessToken = "jwt-token";
+        var refreshToken = "refresh-token";
 
         _mockRepos.Setup(r =>
-            r.GetByEmailAsync(command.Email, It.IsAny<CancellationToken>()))
+            r.GetByEmailAsync(
+                command.Email,
+                It.IsAny<CancellationToken>()))
             .ReturnsAsync(user);
 
         _mockHasher.Setup(h =>
-            h.VerifyPassword(command.Password, user.PasswordHash))
+            h.VerifyPassword(
+                command.Password,
+                user.PasswordHash))
             .Returns(true);
 
         _mockTokenService.Setup(t =>
-            t.GenerateToken(user.Id, user.Role.ToString()))
-            .Returns(token);
+            t.GenerateToken(
+                user.Id,
+                user.Role.ToString()))
+            .Returns(accessToken);
+
+        _mockTokenService.Setup(t =>
+            t.GenerateRefreshToken())
+            .Returns(refreshToken);
 
         var result = await _handler.Handle(command, CancellationToken.None);
 
         Assert.True(result.IsSuccess);
+
         Assert.NotNull(result.Value);
-        Assert.IsType<LoginUserResponse>(result.Value);
-        Assert.Equal(token, result.Value.Token);
+
+        Assert.IsType<LoginUserResponse>(
+            result.Value);
+
+        Assert.Equal(
+            accessToken,
+            result.Value.Token);
 
         _mockTokenService.Verify(t =>
-            t.GenerateToken(user.Id, user.Role.ToString()),
+            t.GenerateToken(
+                user.Id,
+                user.Role.ToString()),
+            Times.Once);
+
+        _mockTokenService.Verify(t =>
+            t.GenerateRefreshToken(),
+            Times.Once);
+
+        _mockRefreshTokenRepository.Verify(r =>
+            r.SaveAsync(
+                It.IsAny<RefreshToken>(),
+                It.IsAny<CancellationToken>()),
+            Times.Once);
+
+        _mockUnitOfWork.Verify(u =>
+            u.SaveChangesAsync(
+                It.IsAny<CancellationToken>()),
             Times.Once);
     }
 }
