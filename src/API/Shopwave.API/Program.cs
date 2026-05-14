@@ -4,6 +4,7 @@ using Shopwave.Shared.Abstractions;
 using Shopwave.Shared.Mediator;
 
 using Shopwave.Modules.Identity.Application.Abstractions;
+using Shopwave.Modules.Identity.Domain.Enums;
 using Shopwave.Modules.Identity.Application.Commands.RegisterUser;
 using Shopwave.Modules.Identity.Application.Commands.LoginUser;
 using Shopwave.Modules.Identity.Application.Commands.LoginUser.Responses;
@@ -120,41 +121,40 @@ app.UseAuthorization();
 // test endpoint
 app.MapGet("/", () => "shopwave api running");
 
-// register user endpoint
-app.MapPost("/users/register", async (
-    RegisterUserCommand command,
-    IMediator mediator,
-    CancellationToken ct) =>
+// POST: sellers/register
+app.MapPost("/sellers/register", async (RegisterUserCommand command, IMediator mediator, CancellationToken ct) =>
 {
-    var result = await mediator.Send<RegisterUserCommand, Result<Guid>>(command, ct);
+    var secureCommand = command with { Role = UserRole.Seller };
+    var result = await mediator.Send<RegisterUserCommand, Result<Guid>>(secureCommand, ct);
+    return result.IsSuccess ? Results.Created($"/users/{result.Value}", result.Value) : Results.BadRequest(result.Error);
+}).AllowAnonymous();
 
-    return result.IsSuccess
-        ? Results.Created($"/users/{result.Value}", result.Value)
-        : Results.BadRequest(result.Error);
-}).RequireAuthorization();
+// POST: buyers/register
+app.MapPost("/buyers/register", async (RegisterUserCommand command, IMediator mediator, CancellationToken ct) =>
+{
+    var secureCommand = command with { Role = UserRole.Buyer };
+    var result = await mediator.Send<RegisterUserCommand, Result<Guid>>(secureCommand, ct);
+    return result.IsSuccess ? Results.Created($"/users/{result.Value}", result.Value) : Results.BadRequest(result.Error);
+}).AllowAnonymous();
 
-app.MapPost("/users/login", async (
-    LoginUserCommand command,
-    IMediator mediator,
-    CancellationToken ct) =>
+// POST: auth/login
+app.MapPost("/auth/login", async (LoginUserCommand command, IMediator mediator, CancellationToken ct) =>
 {
     var result = await mediator.Send<LoginUserCommand, Result<LoginUserResponse>>(command, ct);
 
     return result.IsSuccess
         ? Results.Ok(result.Value)
         : Results.BadRequest(result.Error);
-});
+}).AllowAnonymous();
 
-app.MapPost("/auth/refresh", async (
-    RefreshTokenCommand command,
-    IMediator mediator,
-    CancellationToken ct) =>
+// POST: auth/refresh
+app.MapPost("/auth/refresh", async (RefreshTokenCommand command, IMediator mediator, CancellationToken ct) =>
 {
     var result = await mediator.Send<RefreshTokenCommand, Result<RefreshTokenResponse>>(command, ct);
 
     return result.IsSuccess
         ? Results.Ok(result.Value)
         : Results.BadRequest(result.Error);
-});
+}).AllowAnonymous();
 
 app.Run();

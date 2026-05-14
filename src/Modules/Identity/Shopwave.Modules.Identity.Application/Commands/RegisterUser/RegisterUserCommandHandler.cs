@@ -51,7 +51,7 @@ public class RegisterUserCommandHandler : ICommandHandler<RegisterUserCommand, R
             request.Email,
             passwordHash,
             request.PhoneNumber,
-            UserRole.Buyer
+            request.Role
             );
 
         await _userRepository.AddAsync(user);
