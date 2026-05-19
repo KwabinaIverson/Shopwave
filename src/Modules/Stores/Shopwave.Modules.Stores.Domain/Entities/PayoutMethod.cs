@@ -4,6 +4,10 @@ using Shopwave.Modules.Stores.Domain.Enums;
 
 namespace Shopwave.Modules.Stores.Domain.Entities;
 
+/// <summary>
+/// Represents a payout method for a store (e.g., bank account or mobile money).
+/// Instances are created by the store aggregate and contain verification metadata.
+/// </summary>
 public class PayoutMethod : Entity
 {
     private static readonly Regex ProviderRegex = new(
@@ -26,24 +30,56 @@ public class PayoutMethod : Entity
         RegexOptions.Compiled
     );
 
+    /// <summary>
+    /// Gets the type of payout method (BankAccount, MobileMoney, etc.).
+    /// </summary>
     public PayoutMethodType Type { get; private set; }
 
+    /// <summary>
+    /// Provider name (e.g., bank or mobile money operator).
+    /// </summary>
     public string? Provider { get; private set; }
 
+    /// <summary>
+    /// The account name associated with this payout method.
+    /// </summary>
     public string? AccountName { get; private set; }
 
+    /// <summary>
+    /// Identifier for the account (e.g., account number or mobile number).
+    /// </summary>
     public string? AccountIdentifier { get; private set; }
 
+    /// <summary>
+    /// Whether the payout method has been verified by the platform or a third party.
+    /// </summary>
     public bool IsVerified { get; private set; }
 
+    /// <summary>
+    /// When the payout method was verified, if applicable.
+    /// </summary>
     public DateTime? VerifiedAt { get; private set; }
 
+    /// <summary>
+    /// Reference returned by the verification provider.
+    /// </summary>
     public string? VerificationReference { get; private set; }
 
+    /// <summary>
+    /// Whether this payout method is marked as the default for the store.
+    /// </summary>
     public bool IsDefault { get; private set; }
 
     private PayoutMethod() { }
 
+    /// <summary>
+    /// Initializes a new instance of <see cref="PayoutMethod"/>.
+    /// Intended for internal use by the <see cref="Store"/> aggregate.
+    /// </summary>
+    /// <param name="type">Payout method type.</param>
+    /// <param name="provider">Provider name.</param>
+    /// <param name="accountName">Account holder name.</param>
+    /// <param name="accountIdentifier">Account identifier.</param>
     internal PayoutMethod(PayoutMethodType type, string provider, string accountName, string accountIdentifier)
     {
         Type = type;
@@ -56,6 +92,12 @@ public class PayoutMethod : Entity
         );
     }
 
+    /// <summary>
+    /// Marks the payout method as verified and records verification metadata.
+    /// </summary>
+    /// <param name="verifiedAccountName">Account name confirmed during verification.</param>
+    /// <param name="verificationReference">Reference identifier from the verification provider.</param>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="verificationReference"/> is null or empty.</exception>
     internal void Verify(
         string verifiedAccountName,
         string verificationReference)
@@ -75,6 +117,10 @@ public class PayoutMethod : Entity
         VerificationReference = verificationReference;
     }
 
+    /// <summary>
+    /// Marks this payout method as the default. Only verified methods may be set as default.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">Thrown when the method is not verified.</exception>
     internal void SetAsDefault()
     {
         if (!IsVerified)
@@ -83,11 +129,20 @@ public class PayoutMethod : Entity
         IsDefault = true;
     }
 
+    /// <summary>
+    /// Removes the default designation from this payout method.
+    /// </summary>
     internal void RemoveDefault()
     {
         IsDefault = false;
     }
 
+    /// <summary>
+    /// Validates the provider string.
+    /// </summary>
+    /// <param name="value">Provider value to validate.</param>
+    /// <returns>Trimmed provider value.</returns>
+    /// <exception cref="ArgumentException">Thrown when provider is null/empty or contains invalid characters.</exception>
     private static string ValidateProvider(
         string value)
     {
@@ -102,6 +157,12 @@ public class PayoutMethod : Entity
         return value;
     }
 
+    /// <summary>
+    /// Validates the account name.
+    /// </summary>
+    /// <param name="value">Account name to validate.</param>
+    /// <returns>Trimmed account name.</returns>
+    /// <exception cref="ArgumentException">Thrown when the account name is null/empty or contains invalid characters.</exception>
     private static string ValidateAccountName(
         string value)
     {
@@ -116,6 +177,13 @@ public class PayoutMethod : Entity
         return value;
     }
 
+    /// <summary>
+    /// Validates the account identifier based on payout method type.
+    /// </summary>
+    /// <param name="type">Payout method type.</param>
+    /// <param name="value">Identifier to validate.</param>
+    /// <returns>Trimmed identifier.</returns>
+    /// <exception cref="ArgumentException">Thrown when identifier is null/empty or fails pattern checks for the specified type.</exception>
     private static string ValidateAccountIdentifier(
         PayoutMethodType type,
         string value)

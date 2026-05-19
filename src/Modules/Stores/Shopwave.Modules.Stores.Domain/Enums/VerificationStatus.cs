@@ -1,5 +1,8 @@
 namespace Shopwave.Modules.Stores.Domain.Enums;
 
+/// <summary>
+/// Represents the verification lifecycle state for a <see cref="Shopwave.Modules.Stores.Domain.Entities.Store"/>.
+/// </summary>
 public enum VerificationStatus
 {
     /// <summary>The seller has not uploaded onboarding documents yet.</summary>
