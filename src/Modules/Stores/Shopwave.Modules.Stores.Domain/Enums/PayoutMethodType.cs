@@ -1,5 +1,8 @@
 namespace Shopwave.Modules.Stores.Domain.Enums;
 
+/// <summary>
+/// Specifies supported payout method categories used by stores.
+/// </summary>
 public enum PayoutMethodType
 {
     /// <summary>Default fallback state to prevent accidental processing errors.</summary>

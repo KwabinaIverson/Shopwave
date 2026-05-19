@@ -1,5 +1,8 @@
 namespace Shopwave.Modules.Stores.Domain.Enums;
 
+/// <summary>
+/// Represents the operational lifecycle status of a store.
+/// </summary>
 public enum StoreStatus
 {
     /// <summary>The store is hidden; setup is incomplete.</summary>
