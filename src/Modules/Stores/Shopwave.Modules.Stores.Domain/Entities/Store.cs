@@ -137,7 +137,7 @@ public class Store : AggregateRoot
         );
 
         _payoutMethods.Add(method);
-        RaiseDomainEvent(new StorePayoutMethodAddedEvent(Id, method.Id));
+        this.RaiseDomainEvent(new StorePayoutMethodAddedEvent(Id, method.Id));
     }
 
     /// <summary>
@@ -159,7 +159,7 @@ public class Store : AggregateRoot
         _verifications.Add(verification);
 
         VerificationStatus = VerificationStatus.PendingReview;
-        RaiseDomainEvent(new StoreVerificationSubmittedEvent(Id, OwnerId));
+        this.RaiseDomainEvent(new StoreVerificationSubmittedEvent(Id, OwnerId));
     }
 
     /// <summary>
@@ -170,7 +170,7 @@ public class Store : AggregateRoot
         VerificationStatus = VerificationStatus.Approved;
 
         Status = StoreStatus.Active;
-        RaiseDomainEvent(new StoreVerificationApprovedEvent(Id, OwnerId));
+        this.RaiseDomainEvent(new StoreVerificationApprovedEvent(Id, OwnerId));
     }
 
     /// <summary>
@@ -232,7 +232,7 @@ public class Store : AggregateRoot
         {
             method.SetAsDefault();
         }
-        RaiseDomainEvent(new StorePayoutMethodVerifiedEvent(Id, method.Id));
+        this.RaiseDomainEvent(new StorePayoutMethodVerifiedEvent(Id, method.Id));
     }
 
     /// <summary>
@@ -273,6 +273,21 @@ public class Store : AggregateRoot
  
         VerificationStatus = VerificationStatus.Rejected;
         Status = StoreStatus.Draft;
-        RaiseDomainEvent(new StoreVerificationRejectedEvent(Id, OwnerId, reason));
+        this.RaiseDomainEvent(new StoreVerificationRejectedEvent(Id, OwnerId, reason));
+    }
+    
+    /// <summary>
+    /// Soft-deletes the store by marking it as deleted and recording the deletion time.
+    /// Raises a <see cref="StoreDeletedEvent"/> domain event.
+    /// </summary>
+    public void Archive()
+    {
+        if (IsDeleted) return;
+
+        Status = StoreStatus.Archived;
+        IsDeleted = true;
+        DeletedAt = DateTime.UtcNow;
+
+        RaiseDomainEvent(new StoreArchivedEvent(Id, OwnerId));
     }
 }
