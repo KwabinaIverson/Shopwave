@@ -124,7 +124,7 @@ public class Store : AggregateRoot
     /// <param name="accountName">Name on the payout account.</param>
     /// <param name="accountIdentifier">Account identifier (e.g., account number or mobile number).</param>
     /// <exception cref="InvalidOperationException">Thrown when the store is suspended.</exception>
-    public void AddPayoutMethod(PayoutMethodType type, string provider, string accountName, string accountIdentifier)
+    public Guid AddPayoutMethod(PayoutMethodType type, string provider, string accountName, string accountIdentifier)
     {
         if (Status == StoreStatus.Suspended)
             throw new InvalidOperationException("Suspended stores cannot add payout methods.");
@@ -138,6 +138,7 @@ public class Store : AggregateRoot
 
         _payoutMethods.Add(method);
         this.RaiseDomainEvent(new StorePayoutMethodAddedEvent(Id, method.Id));
+        return method.Id;
     }
 
     /// <summary>
