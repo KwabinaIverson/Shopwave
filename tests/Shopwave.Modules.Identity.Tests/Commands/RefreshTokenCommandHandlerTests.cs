@@ -18,7 +18,7 @@ public class RefreshTokenCommandHandlerTests
     private readonly Mock<ITokenService> _mockTokenService = new();
     private readonly Mock<IRefreshTokenRepository> _mockRefreshTokenRepository = new();
     private readonly Mock<IUserRepository> _mockUserRepository = new();
-    private readonly Mock<IUnitOfWork> _mockUnitOfWork = new();
+    private readonly Mock<IIdentityUnitOfWork> _mockUnitOfWork = new();
 
     private readonly RefreshTokenCommandHandler _handler;
 

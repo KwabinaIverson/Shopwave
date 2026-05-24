@@ -7,14 +7,15 @@ using Shopwave.Modules.Stores.Domain.Repositories;
 
 namespace Shopwave.Modules.Stores.Application.Commands.RegisterStore;
 
-public class RegisterStoreCommandHandler : ICommandHandler<RegisterStoreCommand, Result<Guid>>
+internal sealed class RegisterStoreCommandHandler : ICommandHandler<RegisterStoreCommand, Result<Guid>>
 {
     private readonly IStoreRepository _storeRepository;
-    private readonly IUnitOfWork _unitOfWork;
+    private readonly IStoreUnitOfWork _unitOfWork;
     private readonly IMediator _mediator;
     private readonly ISellerValidationService _sellerValidationService;
 
-    public RegisterStoreCommandHandler(IStoreRepository storeRepository, IUnitOfWork unitOfWork, IMediator mediator,
+    public RegisterStoreCommandHandler(IStoreRepository storeRepository, IStoreUnitOfWork unitOfWork, IMediator 
+            mediator,
         ISellerValidationService sellerValidationService)
     {
         _storeRepository = storeRepository ?? throw new ArgumentNullException(nameof(storeRepository));
@@ -28,9 +29,14 @@ public class RegisterStoreCommandHandler : ICommandHandler<RegisterStoreCommand,
         if (request.OwnerId == Guid.Empty)
             return Result.Failure<Guid>("Owner Id cannot be empty.");
         
-        if (!await _sellerValidationService.IsValidSellerAsync(request.OwnerId, ct))
+        if (!await _sellerValidationService.UserAlreadyHasStoreAsync(request.OwnerId, ct))
         {
             return Result.Failure<Guid>("User is not authorized to register a store.");
+        }
+
+        if (!await _sellerValidationService.IsSlugUniqueAsync(request.Slug, ct))
+        {
+            return Result.Failure<Guid>("Slug is not unique.");
         }
         
         if (string.IsNullOrWhiteSpace(request.DisplayName))

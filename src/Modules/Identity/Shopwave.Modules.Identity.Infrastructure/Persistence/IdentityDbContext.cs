@@ -5,7 +5,7 @@ using Shopwave.Modules.Identity.Application.Abstractions;
 
 namespace Shopwave.Modules.Identity.Infrastructure.Persistence;
 
-public class IdentityDbContext : DbContext, IUnitOfWork
+public class IdentityDbContext : DbContext, IIdentityUnitOfWork
 {
     public IdentityDbContext(DbContextOptions<IdentityDbContext> options) : base(options)
     {

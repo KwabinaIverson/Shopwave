@@ -7,15 +7,15 @@ using Shopwave.Modules.Identity.Domain.Entities;
 
 namespace Shopwave.Modules.Identity.Application.Commands.RegisterUser;
 
-public class RegisterUserCommandHandler : ICommandHandler<RegisterUserCommand, Result<Guid>>
+internal sealed class RegisterUserCommandHandler : ICommandHandler<RegisterUserCommand, Result<Guid>>
 {
     private readonly IUserRepository _userRepository;
     private readonly IMediator _mediator;
     private readonly IPasswordHasher _passwordHasher;
-    private readonly IUnitOfWork _unitOfWork;
+    private readonly IIdentityUnitOfWork _unitOfWork;
 
     public RegisterUserCommandHandler(IUserRepository userRepository, IMediator mediator,
-        IPasswordHasher passwordHasher, IUnitOfWork unitOfWork)
+        IPasswordHasher passwordHasher, IIdentityUnitOfWork unitOfWork)
     {
         _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
         _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));

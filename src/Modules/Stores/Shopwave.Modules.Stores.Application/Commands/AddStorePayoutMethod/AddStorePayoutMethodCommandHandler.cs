@@ -5,14 +5,14 @@ using Shopwave.Modules.Stores.Application.Abstractions;
 
 namespace Shopwave.Modules.Stores.Application.Commands.AddStorePayoutMethod;
 
-public class AddStorePayoutMethodCommandHandler : ICommandHandler<AddStorePayoutMethodCommand, Result<Guid>>
+internal sealed class AddStorePayoutMethodCommandHandler : ICommandHandler<AddStorePayoutMethodCommand, Result<Guid>>
 {
     private readonly IStoreRepository _storeRepository;
     private readonly IMediator _mediator;
-    private readonly IUnitOfWork _unitOfWork;
+    private readonly IStoreUnitOfWork _unitOfWork;
 
     public AddStorePayoutMethodCommandHandler(IStoreRepository storeRepository, IMediator mediator,
-        IUnitOfWork unitOfWork)
+        IStoreUnitOfWork unitOfWork)
     {
         _storeRepository = storeRepository ?? throw new ArgumentNullException(nameof(storeRepository));
         _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
@@ -32,7 +32,7 @@ public class AddStorePayoutMethodCommandHandler : ICommandHandler<AddStorePayout
         if (store.OwnerId != request.CurrentUserId)
             return Result.Failure<Guid>("You do not have permission to modify this store.");
         
-        var newPayoutMethodId = store.AddPayoutMethod(
+        var newPayoutMethod = store.AddPayoutMethod(
             request.Type, 
             request.Provider, 
             request.AccountName, 
@@ -48,6 +48,6 @@ public class AddStorePayoutMethodCommandHandler : ICommandHandler<AddStorePayout
 
         store.ClearDomainEvents();
         
-        return Result.Success(newPayoutMethodId);
+        return Result.Success(store.Id);
     }
 }

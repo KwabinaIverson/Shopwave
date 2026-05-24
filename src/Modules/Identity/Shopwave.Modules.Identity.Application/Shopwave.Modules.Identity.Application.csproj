@@ -3,6 +3,10 @@
   <ItemGroup>
     <ProjectReference Include="..\Shopwave.Modules.Identity.Domain\Shopwave.Modules.Identity.Domain.csproj" />
     <ProjectReference Include="..\..\..\Shared\Shopwave.Shared\Shopwave.Shared.csproj" />
+    
+    <InternalsVisibleTo Include="Shopwave.Modules.Identity.Tests" />
+    <InternalsVisibleTo Include="Shopwave.API" />
+    <InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
   </ItemGroup>
 
   <PropertyGroup>

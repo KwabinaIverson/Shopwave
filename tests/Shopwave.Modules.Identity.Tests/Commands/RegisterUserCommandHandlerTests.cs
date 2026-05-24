@@ -14,7 +14,7 @@ public class RegisterUserCommandHandlerTests
     private readonly Mock<IUserRepository> _mockRepos = new();
     private readonly Mock<IMediator> _mockMediator = new();
     private readonly Mock<IPasswordHasher> _mockHasher = new();
-    private readonly Mock<IUnitOfWork> _mockUow = new();
+    private readonly Mock<IIdentityUnitOfWork> _mockUow = new();
 
     private readonly RegisterUserCommandHandler _handler;
 
