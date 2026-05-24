@@ -9,18 +9,19 @@ using RefreshTokenEntity = Shopwave.Modules.Identity.Domain.Entities.RefreshToke
 
 namespace Shopwave.Modules.Identity.Application.Commands.LoginUser;
 
-public class LoginUserCommandHandler : ICommandHandler<LoginUserCommand, Result<LoginUserResponse>>
+internal sealed class LoginUserCommandHandler : ICommandHandler<LoginUserCommand, Result<LoginUserResponse>>
 {
     private readonly IUserRepository _userRepository;
     private readonly IMediator _mediator;
     private readonly IPasswordHasher _passwordHasher;
     private readonly ITokenService _tokenService;
-    private readonly IUnitOfWork _unitOfWork;
+    private readonly IIdentityUnitOfWork _unitOfWork;
     private readonly IRefreshTokenRepository _refreshTokenRepository;
 
 
     public LoginUserCommandHandler(IUserRepository userRepository, IMediator mediator,
-        IPasswordHasher passwordHasher, ITokenService tokenService, IUnitOfWork unitOfWork, IRefreshTokenRepository refreshTokenRepository)
+        IPasswordHasher passwordHasher, ITokenService tokenService, IIdentityUnitOfWork unitOfWork, 
+        IRefreshTokenRepository refreshTokenRepository)
     {
         _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
         _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));

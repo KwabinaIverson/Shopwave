@@ -9,9 +9,11 @@
     <ProjectReference Include="..\..\Modules\Stores\Shopwave.Modules.Stores.Application\Shopwave.Modules.Stores.Application.csproj" />
     <ProjectReference Include="..\..\Modules\Identity\Shopwave.Modules.Identity.Infrastructure\Shopwave.Modules.Identity.Infrastructure.csproj" />
     <ProjectReference Include="..\..\Shared\Shopwave.Shared\Shopwave.Shared.csproj" />
+    <ProjectReference Include="..\..\Modules\Stores\Shopwave.Modules.Stores.Infrastructure\Shopwave.Modules.Stores.Infrastructure.csproj" />
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="AWSSDK.S3" Version="4.0.23.3" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.25" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.26">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

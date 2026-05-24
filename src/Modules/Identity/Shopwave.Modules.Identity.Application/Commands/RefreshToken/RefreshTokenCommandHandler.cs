@@ -13,13 +13,13 @@ namespace Shopwave.Modules.Identity.Application.Commands.RefreshToken;
 /// Handles refresh token commands to generate new access tokens and refresh tokens.
 /// This handler implements the token rotation pattern for enhanced security.
 /// </summary>
-public class RefreshTokenCommandHandler
+internal sealed class RefreshTokenCommandHandler
     : ICommandHandler<RefreshTokenCommand, Result<RefreshTokenResponse>>
 {
     private readonly ITokenService _tokenService;
     private readonly IRefreshTokenRepository _refreshTokenRepository;
     private readonly IUserRepository _userRepository;
-    private readonly IUnitOfWork _unitOfWork;
+    private readonly IIdentityUnitOfWork _unitOfWork;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="RefreshTokenCommandHandler"/> class.
@@ -30,7 +30,7 @@ public class RefreshTokenCommandHandler
     /// <param name="unitOfWork">Unit of work for transaction management.</param>
     /// <exception cref="ArgumentNullException">Thrown when any dependency is null.</exception>
     public RefreshTokenCommandHandler(ITokenService tokenService, IRefreshTokenRepository refreshTokenRepository,
-        IUserRepository userRepository, IUnitOfWork unitOfWork)
+        IUserRepository userRepository, IIdentityUnitOfWork unitOfWork)
     {
         _tokenService = tokenService ?? throw new ArgumentNullException(nameof(tokenService));
 

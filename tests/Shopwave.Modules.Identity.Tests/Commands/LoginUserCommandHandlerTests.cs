@@ -19,7 +19,7 @@ public class LoginUserCommandHandlerTests
     private readonly Mock<IMediator> _mockMediator = new();
     private readonly Mock<IPasswordHasher> _mockHasher = new();
     private readonly Mock<ITokenService> _mockTokenService = new();
-    private readonly Mock<IUnitOfWork> _mockUnitOfWork = new();
+    private readonly Mock<IIdentityUnitOfWork> _mockUnitOfWork = new();
     private readonly Mock<IRefreshTokenRepository> _mockRefreshTokenRepository = new();
 
     private readonly LoginUserCommandHandler _handler;

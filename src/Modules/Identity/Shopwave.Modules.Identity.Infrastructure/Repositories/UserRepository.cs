@@ -9,9 +9,9 @@ namespace Shopwave.Modules.Identity.Infrastructure.Repositories;
 public class UserRepository : IUserRepository
 {
     private readonly IdentityDbContext _context;
-	private readonly IUnitOfWork _unitOfWork;
+	private readonly IIdentityUnitOfWork _unitOfWork;
 
-    public UserRepository(IdentityDbContext context,  IUnitOfWork unitOfWork)
+    public UserRepository(IdentityDbContext context,  IIdentityUnitOfWork unitOfWork)
     {
         _context = context ?? throw new ArgumentNullException(nameof(context));
 		_unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
