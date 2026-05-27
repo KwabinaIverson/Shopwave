@@ -1,4 +1,5 @@
 using Shopwave.Shared.Domain;
+using Shopwave.Shared.Events.Identity;
 using System.Text.RegularExpressions;
 using System.Net.Mail;
 using Shopwave.Modules.Identity.Domain.Enums;
@@ -28,6 +29,8 @@ public class User : AggregateRoot
         @"^\+?[1-9]\d{7,14}$",
         RegexOptions.Compiled
     );
+
+	public IdentityStatus Status { get; private set; }
 
     /// <summary>
     /// Gets the user's first name.
@@ -175,7 +178,11 @@ public class User : AggregateRoot
         user.PasswordHash = passwordHash;
         user.PhoneNumber = phoneNumber;
         user.Role = role;
-        user.RaiseDomainEvent(new UserCreatedEvent(user.Id, user.Email));
+
+		if (user.Role == UserRole.Seller)
+			user.RaiseDomainEvent(new SellerCreatedEvent(user.Id));
+		else if (user.Role == UserRole.Buyer)
+    		user.RaiseDomainEvent(new BuyerCreatedEvent(user.Id, user.Email));
 
         return user;
     }

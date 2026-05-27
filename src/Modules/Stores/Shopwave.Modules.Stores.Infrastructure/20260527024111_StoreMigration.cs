@@ -3,14 +3,28 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace Shopwave.Modules.Stores.Infrastructure.Persistence.Migrations
+namespace Shopwave.Modules.Stores.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialStoresMigration : Migration
+    public partial class StoreMigration : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.CreateTable(
+                name: "seller_references",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
+                    DeletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_seller_references", x => x.Id);
+                });
+
             migrationBuilder.CreateTable(
                 name: "stores",
                 columns: table => new
@@ -36,6 +50,12 @@ namespace Shopwave.Modules.Stores.Infrastructure.Persistence.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_stores", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_stores_seller_references_OwnerId",
+                        column: x => x.OwnerId,
+                        principalTable: "seller_references",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -107,6 +127,12 @@ namespace Shopwave.Modules.Stores.Infrastructure.Persistence.Migrations
                 column: "StoreId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_stores_OwnerId",
+                table: "stores",
+                column: "OwnerId",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_stores_Slug",
                 table: "stores",
                 column: "Slug",
@@ -124,6 +150,9 @@ namespace Shopwave.Modules.Stores.Infrastructure.Persistence.Migrations
 
             migrationBuilder.DropTable(
                 name: "stores");
+
+            migrationBuilder.DropTable(
+                name: "seller_references");
         }
     }
 }

@@ -9,18 +9,18 @@ using Shopwave.Modules.Stores.Infrastructure.Persistence;
 
 #nullable disable
 
-namespace Shopwave.Modules.Stores.Infrastructure.Persistence.Migrations
+namespace Shopwave.Modules.Stores.Infrastructure.Migrations
 {
     [DbContext(typeof(StoreDbContext))]
-    [Migration("20260523082610_InitialStoresMigration")]
-    partial class InitialStoresMigration
+    [Migration("20260527024111_StoreMigration")]
+    partial class StoreMigration
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.0")
+                .HasAnnotation("ProductVersion", "8.0.26")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -85,6 +85,25 @@ namespace Shopwave.Modules.Stores.Infrastructure.Persistence.Migrations
                     b.ToTable("store_payout_methods", (string)null);
                 });
 
+            modelBuilder.Entity("Shopwave.Modules.Stores.Domain.Entities.SellerReference", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("seller_references", (string)null);
+                });
+
             modelBuilder.Entity("Shopwave.Modules.Stores.Domain.Entities.Store", b =>
                 {
                     b.Property<Guid>("Id")
@@ -129,6 +148,9 @@ namespace Shopwave.Modules.Stores.Infrastructure.Persistence.Migrations
                         .HasColumnType("text");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("OwnerId")
+                        .IsUnique();
 
                     b.HasIndex("Slug")
                         .IsUnique();
@@ -198,6 +220,12 @@ namespace Shopwave.Modules.Stores.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("Shopwave.Modules.Stores.Domain.Entities.Store", b =>
                 {
+                    b.HasOne("Shopwave.Modules.Stores.Domain.Entities.SellerReference", null)
+                        .WithOne("Store")
+                        .HasForeignKey("Shopwave.Modules.Stores.Domain.Entities.Store", "OwnerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.OwnsOne("Shopwave.Shared.Domain.Address", "BusinessAddress", b1 =>
                         {
                             b1.Property<Guid>("StoreId")
@@ -256,6 +284,11 @@ namespace Shopwave.Modules.Stores.Infrastructure.Persistence.Migrations
                         .HasForeignKey("StoreId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("Shopwave.Modules.Stores.Domain.Entities.SellerReference", b =>
+                {
+                    b.Navigation("Store");
                 });
 
             modelBuilder.Entity("Shopwave.Modules.Stores.Domain.Entities.Store", b =>

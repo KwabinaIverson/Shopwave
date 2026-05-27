@@ -58,7 +58,7 @@ internal sealed class RegisterUserCommandHandler : ICommandHandler<RegisterUserC
         await _unitOfWork.SaveChangesAsync(ct);
         
         foreach (var domainEvent in user.DomainEvents)
-            await _mediator.Publish(domainEvent, ct);
+            await _mediator.Publish((dynamic)domainEvent, ct);
 
         user.ClearDomainEvents();
 

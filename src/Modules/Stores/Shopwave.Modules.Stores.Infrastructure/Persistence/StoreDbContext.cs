@@ -9,8 +9,9 @@ public class StoreDbContext : DbContext, IStoreUnitOfWork
 {
     public StoreDbContext(DbContextOptions<StoreDbContext> options) : base(options)
     {
-    }   
-    
+    }
+
+    public DbSet<SellerReference> Sellers => Set<SellerReference>();
     public DbSet<Store> Stores => Set<Store>();
     public DbSet<PayoutMethod> PayoutMethods => Set<PayoutMethod>();
     public DbSet<StoreVerification> StoreVerifications => Set<StoreVerification>();

@@ -12,15 +12,16 @@ internal sealed class RegisterStoreCommandHandler : ICommandHandler<RegisterStor
     private readonly IStoreRepository _storeRepository;
     private readonly IStoreUnitOfWork _unitOfWork;
     private readonly IMediator _mediator;
+    private readonly ISellerReferenceRepository _sellerReferenceRepository;
     private readonly ISellerValidationService _sellerValidationService;
 
-    public RegisterStoreCommandHandler(IStoreRepository storeRepository, IStoreUnitOfWork unitOfWork, IMediator 
-            mediator,
-        ISellerValidationService sellerValidationService)
+    public RegisterStoreCommandHandler(IStoreRepository storeRepository, IStoreUnitOfWork unitOfWork, 
+        IMediator mediator, ISellerReferenceRepository sellerReferenceRepository, ISellerValidationService sellerValidationService)
     {
         _storeRepository = storeRepository ?? throw new ArgumentNullException(nameof(storeRepository));
         _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
         _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
+        _sellerReferenceRepository = sellerReferenceRepository ?? throw new ArgumentNullException(nameof(sellerReferenceRepository));
         _sellerValidationService = sellerValidationService ?? throw new ArgumentNullException(nameof(sellerValidationService));
     }
 
@@ -28,16 +29,6 @@ internal sealed class RegisterStoreCommandHandler : ICommandHandler<RegisterStor
     {
         if (request.OwnerId == Guid.Empty)
             return Result.Failure<Guid>("Owner Id cannot be empty.");
-        
-        if (!await _sellerValidationService.UserAlreadyHasStoreAsync(request.OwnerId, ct))
-        {
-            return Result.Failure<Guid>("User is not authorized to register a store.");
-        }
-
-        if (!await _sellerValidationService.IsSlugUniqueAsync(request.Slug, ct))
-        {
-            return Result.Failure<Guid>("Slug is not unique.");
-        }
         
         if (string.IsNullOrWhiteSpace(request.DisplayName))
             return Result.Failure<Guid>("Display name cannot be empty.");
@@ -60,6 +51,20 @@ internal sealed class RegisterStoreCommandHandler : ICommandHandler<RegisterStor
         if (string.IsNullOrWhiteSpace(request.StoreAddress.Country))
             return Result.Failure<Guid>("Country cannot be empty.");
 
+        
+        var isValidSeller = await _sellerReferenceRepository.VerifySellerReferenceAsync(request.OwnerId, ct);
+
+        if (!isValidSeller)
+        {
+            return Result.Failure<Guid>("Unauthorized: Valid seller profile not found.");
+        }
+
+        if (!await _sellerValidationService.IsSlugUniqueAsync(request.Slug, ct))
+        {
+            return Result.Failure<Guid>("The requested store URL (slug) is already in use.");
+        }
+        
+        
         var address = new Address(
             request.StoreAddress.StreetAddress1,
             request.StoreAddress.StreetAddress2,
@@ -67,7 +72,7 @@ internal sealed class RegisterStoreCommandHandler : ICommandHandler<RegisterStor
             request.StoreAddress.StateProvinceRegion,
             request.StoreAddress.Country,
             request.StoreAddress.PostalZipCode
-            );
+        );
 
         var store = Store.Create(
             request.OwnerId,
@@ -75,13 +80,15 @@ internal sealed class RegisterStoreCommandHandler : ICommandHandler<RegisterStor
             request.Slug,
             request.BusinessName,
             address
-            );
-
-        await _storeRepository.AddAsync(store);
+        );
+        
+        await _storeRepository.AddAsync(store, ct);
         await _unitOfWork.SaveChangesAsync(ct);
-
+        
         foreach (var domainEvent in store.DomainEvents)
+        {
             await _mediator.Publish(domainEvent, ct);
+        }
 
         store.ClearDomainEvents();
         

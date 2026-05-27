@@ -5,11 +5,13 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Scrutor;
 using System.Text;
+using System.IdentityModel.Tokens.Jwt;
 
 using Shopwave.Shared;
 using Shopwave.Shared.Results;
 using Shopwave.Shared.Abstractions;
 using Shopwave.Shared.Mediator;
+using Shopwave.Shared.Events.Identity;
 
 using Shopwave.Modules.Identity.Application.Abstractions;
 using Shopwave.Modules.Identity.Domain.Enums;
@@ -30,6 +32,7 @@ using Shopwave.Modules.Stores.Application.Commands.AddStorePayoutMethod;
 using Shopwave.Modules.Stores.Domain.Repositories;
 using Shopwave.Modules.Stores.Infrastructure.Persistence;
 using Shopwave.Modules.Stores.Infrastructure.Repositories;
+using Shopwave.Modules.Stores.Application.EventHandlers;
 
 // API Endpoints
 using Shopwave.API.Endpoints;
@@ -140,8 +143,31 @@ builder.Services.AddScoped<
     ICommandHandler<SubmitVerificationBundleCommand, Result<Guid>>, 
     SubmitVerificationBundleCommandHandler>();
 
-// As you add new commands/queries, just drop them right here.
+builder.Services.AddScoped<ISellerReferenceRepository, SellerReferenceRepository>();
 
+
+//
+// ─────────────────────────────────────────────
+// Event Handler Registrations (Automated)
+// ─────────────────────────────────────────────
+//
+// Automatically finds every class in the Stores module that implements IDomainEventHandler
+var infrastructureAssembly = typeof(OnSellerCreatedHandler).Assembly;
+
+var eventHandlers = infrastructureAssembly.GetTypes()
+    .Where(t => t.GetInterfaces().Any(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IDomainEventHandler<>)))
+    .Where(t => !t.IsAbstract && !t.IsInterface);
+
+foreach (var handler in eventHandlers)
+{
+    var interfaces = handler.GetInterfaces()
+        .Where(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IDomainEventHandler<>));
+
+    foreach (var @interface in interfaces)
+    {
+        builder.Services.AddTransient(@interface, handler);
+    }
+}
 
 //
 // ─────────────────────────────────────────────
@@ -151,6 +177,15 @@ builder.Services.AddScoped<
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
+        options.TokenHandlers.Clear();
+        options.TokenHandlers.Add(new JwtSecurityTokenHandler());
+
+        // 1. Declare variables
+        var jwtIssuer = builder.Configuration["Jwt:Issuer"];
+        var jwtAudience = builder.Configuration["Jwt:Audience"];
+        var jwtSecretKey = builder.Configuration["Jwt:SecretKey"];
+
+        // 2. Pass those variables INTO the object initializer
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,
@@ -158,11 +193,25 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
 
-            ValidIssuer = builder.Configuration["Jwt:Issuer"],
-            ValidAudience = builder.Configuration["Jwt:Audience"],
+            ValidIssuer = jwtIssuer,
+            ValidAudience = jwtAudience,
             IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(builder.Configuration["Jwt:SecretKey"]!)
+                Encoding.UTF8.GetBytes(jwtSecretKey!)
             )
+        };
+
+        options.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = context =>
+            {
+               var authHeader = context.Request.Headers["Authorization"].FirstOrDefault();
+              if (!string.IsNullOrEmpty(authHeader) && authHeader.StartsWith("Bearer "))
+              {
+                  context.Token = authHeader.Substring("Bearer ".Length).Trim();
+              }
+    
+              return Task.CompletedTask;
+            },
         };
     });
 
@@ -181,6 +230,33 @@ builder.Services.AddSwaggerGen(options =>
     {
         Title = "Shopwave API",
         Version = "v1"
+    });
+
+    // 1. Add the Security Definition (Creates the "Authorize" padlock button)
+    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Description = "JWT Authorization header using the Bearer scheme. \r\n\r\nEnter 'Bearer' [space] and then your token in the text input below.\r\n\r\nExample: \"Bearer eyJhbGciOi...\"",
+        In = ParameterLocation.Header,
+        Type = SecuritySchemeType.ApiKey,
+        Scheme = "Bearer",
+        BearerFormat = "JWT"
+    });
+
+    // 2. Add the Security Requirement (Tells Swagger to send the token with every request)
+    options.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            Array.Empty<string>()
+        }
     });
 });
 
