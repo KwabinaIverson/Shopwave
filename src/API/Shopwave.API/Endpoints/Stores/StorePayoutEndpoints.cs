@@ -17,7 +17,7 @@ public static class StorePayoutEndpoints
             .WithTags("Store Payouts");
 
         // [Authorize]
-        group.MapPost("{storeId:guid}/payout-methods", async (
+        group.MapPost("{storeId}/payout-methods", async (
             Guid storeId,
             [FromBody] AddStorePayoutMethodApiRequest request,
             IMediator mediator,

@@ -96,6 +96,15 @@ public class StoreConfiguration : IEntityTypeConfiguration<Store>
         });
 
         // ─────────────────────────────────────
+        // Relationships
+        // ─────────────────────────────────────
+        // The Anti-Corruption Layer link: Ties the Store strictly to the verified SellerReference
+       builder.HasOne<SellerReference>()
+    		.WithOne(seller => seller.Store)
+    		.HasForeignKey<Store>(x => x.OwnerId)
+    		.OnDelete(DeleteBehavior.Restrict);
+
+        // ─────────────────────────────────────
         // Child Collection: PayoutMethods
         // ─────────────────────────────────────
         builder.HasMany(x => x.PayoutMethods)
