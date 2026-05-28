@@ -46,6 +46,6 @@ public static class VerificationEndpoints
             }
             
             return Results.Ok(new { message = "Verification submitted successfully", storeId = result.Value });
-        }).RequireAuthorization();
+        }).RequireAuthorization(policy => policy.RequireRole("Seller"));
     }
 }
