@@ -33,6 +33,10 @@ using Shopwave.Modules.Stores.Domain.Repositories;
 using Shopwave.Modules.Stores.Infrastructure.Persistence;
 using Shopwave.Modules.Stores.Infrastructure.Repositories;
 using Shopwave.Modules.Stores.Application.EventHandlers;
+using Shopwave.Modules.Stores.Application.Queries.GetStoreProfile;
+using Shopwave.Modules.Stores.Application.Queries.GetStoreProfile.Responses;
+using Shopwave.Modules.Stores.Application.Queries.GetStorePayoutMethod;
+using Shopwave.Modules.Stores.Application.Queries.GetStorePayoutMethod.Responses;
 
 // API Endpoints
 using Shopwave.API.Endpoints;
@@ -76,7 +80,7 @@ builder.Services.AddDbContext<IdentityDbContext>(options =>
 
 builder.Services.AddDbContext<StoreDbContext>(options =>
     options.UseNpgsql(connectionString)
-);
+           .UseSnakeCaseNamingConvention());
 
 
 //
@@ -144,6 +148,10 @@ builder.Services.AddScoped<
     SubmitVerificationBundleCommandHandler>();
 
 builder.Services.AddScoped<ISellerReferenceRepository, SellerReferenceRepository>();
+builder.Services.AddScoped<ISqlConnectionFactory, SqlConnectionFactory>();
+builder.Services.AddScoped<IQueryHandler<GetStoreQuery, Result<GetStoreResponse>>, GetStoreQueryHandler>();
+builder.Services.AddScoped<IQueryHandler<GetStorePayoutMethodQuery, Result<GetStorePayoutMethodResponse>>, 
+    GetStorePayoutMethodQueryHandler>();
 
 
 //
@@ -336,6 +344,7 @@ app.MapStoreEndpoints();
 app.MapStorePayoutEndpoints();
 app.MapVerificationEndpoints();
 app.MapDocumentEndpoints();
+app.MapStoreProfileEndpoints();
 
 
 //
