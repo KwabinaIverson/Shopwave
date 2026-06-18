@@ -3,6 +3,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Shopwave.Modules.Stores.Application\Shopwave.Modules.Stores.Application.csproj" />
     <ProjectReference Include="..\Shopwave.Modules.Stores.Domain\Shopwave.Modules.Stores.Domain.csproj" />
+    <InternalsVisibleTo Include="Shopwave.API" />
   </ItemGroup>
 
   <ItemGroup>
